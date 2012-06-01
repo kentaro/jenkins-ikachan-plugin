@@ -1,0 +1,17 @@
+<%
+f = taglib("/lib/form")
+f.entry(
+  :title       => 'Base URL',
+  :field       => 'base_url',
+  :description => "Ikachan's Base URL (ex. http://ikachan.example.com/)"
+) do
+  f.textbox
+end
+f.entry(
+  :title       => 'Channel',
+  :field       => 'channel',
+  :description => "A channel to be published."
+) do
+  f.textbox
+end
+%>

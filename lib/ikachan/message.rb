@@ -1,17 +1,19 @@
 module Ikachan
   module Message
     attr_reader :build
-    attr_reader :color
-    attr_reader :notify
     attr_reader :status
+    attr_reader :color
+    attr_reader :code
+    attr_reader :notify
 
     def message
       msg = "#{build.full_display_name} - #{status} after #{build.duration_string}"
+
       instance = Java::jenkins::model::Jenkins.instance
-      if instance && instance.root_url
-        msg << " (<a href=\"#{instance.root_url.chomp('/')}/#{build.url}\">Open</a>)"
-      end
-      msg
+      root_url = (instance && instance.root_url) || ''
+      msg << " (#{root_url}/#{build.url})"
+
+      "\x03%s%s" % [code.to_s, msg]
     end
   end
 
@@ -22,6 +24,7 @@ module Ikachan
       @build  = build
       @status = 'Success'
       @color  = 'green'
+      @code   = 3
       @notify = false
     end
   end
@@ -33,6 +36,7 @@ module Ikachan
       @build  = build
       @status = 'Unstable'
       @color  = 'yellow'
+      @code   = 8
       @notify = true
     end
   end
@@ -44,22 +48,25 @@ module Ikachan
       @build  = build
       @status = 'FAILURE'
       @color  = 'red'
+      @code   = 4
       @notify = true
     end
 
     def message
-      msg = super
+      msg   = super
       items = build.change_set.items
-      unless items.empty?
+
+      if items.any?
         msg << ': changed by '
         msg << items.map { |i|
           if i.respond_to? :author_name # GitChangeSet
-            "@\"#{i.author_name}\""
+            "@#{i.author_name}"
           else
             "@#{i.author.full_name}"
           end
         }.uniq.join(' ')
       end
+
       msg
     end
   end
@@ -71,6 +78,7 @@ module Ikachan
       @build  = build
       @status = 'Not Built'
       @color  = 'yellow'
+      @code   = 8
       @notify = true
     end
   end
@@ -82,6 +90,7 @@ module Ikachan
       @build  = build
       @status = 'ABORTED'
       @color  = 'yellow'
+      @code   = 8
       @notify = false
     end
   end

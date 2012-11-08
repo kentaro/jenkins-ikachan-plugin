@@ -11,7 +11,9 @@ module Ikachan
 
       instance = Java::jenkins::model::Jenkins.instance
       root_url = (instance && instance.root_url) || ''
-      msg << " (#{root_url}/#{build.url})"
+
+      url = [ root_url, build.url ].join(root_url[-1] == '/' ? '' : '/')
+      msg << " (#{url})"
 
       "\x03%s%s" % [code.to_s, msg]
     end
